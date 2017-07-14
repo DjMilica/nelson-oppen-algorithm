@@ -1,0 +1,24 @@
+%option noyywrap
+
+%{
+#include "fol.hpp"
+#include "parser.hpp"
+%}
+
+%%
+
+
+[a-z][a-zA-Z_0-9]*       yylval.str_attr = new string(yytext); return SYMBOL;
+\(                       return *yytext;
+\)                       return *yytext;
+,			 return *yytext;
+=			 return EQ;
+\{            return *yytext;
+\}            return *yytext;
+\[                       return *yytext;
+\]                       return *yytext;
+:                        return *yytext;
+;                        return *yytext;
+[ \t\n]
+
+%%
