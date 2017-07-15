@@ -1,4 +1,5 @@
 #include "fol.hpp"
+#include "unionFind.hpp"
 #include <vector>
 #include <set>
 #include <map>
@@ -10,26 +11,9 @@ extern int yyparse();
 extern Formula parsed_formula;
 extern vector<Formula>* parsed_set_of_formulas;
 
-/*bool comparator(const Term &lhs, const Term &rhs)
-{
-    return !lhs->equalTo(rhs);
-}*/
-struct C
-{
-    bool operator()(const Term &a, const Term &b) const
-    {
-        return !a->equalTo(b);
-    }
-};
-
-//typedef set<Term, bool(*)(const Term&, const Term&)> TermSet;
-typedef set<Term, C> TermSet;
-typedef map<Term, TermSet> UseMap;
-
-
 
 void getTermsFromTerm(FunctionTerm *ft, TermSet& allTerms){
-	Term t = make_shared<FunctionTerm>(ft->getSymbol(),std::move(ft->getOperands()));
+	Term t = make_shared<FunctionTerm>(ft->getSymbol(),ft->getOperands());
 	allTerms.insert(t);
 	if(ft->getOperands().size()==0){
 		return ;
@@ -53,11 +37,10 @@ void getTerms(vector<Formula>* vf, Formula f, TermSet& allTerms){
 		getTermsFromFormula(i,allTerms);
 	getTermsFromFormula(f,allTerms);
 }
-//{a=c} {c=r};
+
 void getUseMap(UseMap &um, TermSet &t){
 	//prolazimo kroz sve termove
 	for(auto i: t){
-		//TermSet temp(&comparator);
 		TermSet temp;
 		//prolazimo kroz termove da vidimo da li je term i deo nekog terma
 		for(auto j: t){
@@ -79,13 +62,10 @@ int main()
   if(parsed_formula.get() != 0)
     cout << parsed_formula;
   cout<< "\na sad formule" << endl;
-  
-  
   for(auto i:*parsed_set_of_formulas){
 	  cout<<i<<endl;
   }
   cout << "a sad skup termova"<<endl;
- // TermSet allTerms(&comparator);
   TermSet allTerms;
   getTerms(parsed_set_of_formulas, parsed_formula, allTerms);
   for(auto i:allTerms)
@@ -100,7 +80,15 @@ int main()
 			cout << v << ", ";
 		cout<<endl;
    }
-  cout<<endl;
+  cout<<endl; 
+	/*************rad sa union find*******************/
+	cout<< "         Union find        " << endl;
+	UnionFind u(allTerms);
+	TermSet klaseEkvivalencije;
+	klaseEkvivalencije = u.findAllRoots();
+	int i=0;
+	for(auto r: klaseEkvivalencije){
+			cout << "Klasa ekv. " << i << " :" << r << endl;
+	}
   return 0;
 }
-//TODO::PROVERI ZASTO SET NE RADI DOBRO, IZBACUJE NEKE ISTEEEEE!!!!

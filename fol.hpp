@@ -6,6 +6,9 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <utility>
+#include <set>
+#include <map>
 
 using namespace std;
 
@@ -34,15 +37,11 @@ private:
   vector<Term> _ops;
 
 public:
-  FunctionTerm(const FunctionSymbol & f, 
-	       const vector<Term> & ops)
-    :_f(f),
-     _ops(ops)
+  FunctionTerm(const FunctionSymbol & f, const vector<Term> & ops)
+    :_f(f), _ops(ops)
   {}
-  FunctionTerm(const FunctionSymbol & f, 
-	       vector<Term> && ops = vector<Term> ())
-    :_f(f),
-     _ops(ops)
+  FunctionTerm(const FunctionSymbol & f, vector<Term> && ops = vector<Term> ())
+    :_f(f), _ops(ops)
   {} 
 
   virtual Type getType() const
@@ -64,33 +63,31 @@ public:
   {
     ostr << _f;
 
-    for(unsigned i = 0; i < _ops.size(); i++)
-      {
-	if(i == 0)
-	  ostr << "(";
-	_ops[i]->printTerm(ostr);
-	if(i != _ops.size() - 1)
-	  ostr << ",";
-	else
-	  ostr << ")";
-      }
+    for(unsigned i = 0; i < _ops.size(); i++){
+		if(i == 0)
+			ostr << "(";
+		_ops[i]->printTerm(ostr);
+		if(i != _ops.size() - 1)
+			ostr << ",";
+		else
+			ostr << ")";
+		}
   }
-   virtual bool equalTo(const Term &t) const{
-	
-	if(_f != ((FunctionTerm *) t.get())->getSymbol())
-		return false;
+	virtual bool equalTo(const Term &t) const{
+		if(_f != ((FunctionTerm *) t.get())->getSymbol())
+			return false;
 
-	const vector<Term> & t_ops = ((FunctionTerm *) t.get())->getOperands();
+		const vector<Term> & t_ops = ((FunctionTerm *) t.get())->getOperands();
 
-	if(_ops.size() != t_ops.size())
-		return false;
+		if(_ops.size() != t_ops.size())
+			return false;
 
-	for(unsigned i = 0; i < _ops.size(); i++)
-	if(!_ops[i]->equalTo(t_ops[i]))
-		return false;
+		for(unsigned i = 0; i < _ops.size(); i++)
+			if(!_ops[i]->equalTo(t_ops[i]))
+				return false;
 
-	return true;
-   }
+		return true;
+	}
 };
 
 class BaseFormula;
@@ -207,7 +204,32 @@ inline
 bool operator==(const Term& lhs, const Term& rhs){ 
 	return lhs->equalTo(rhs);
 }
+inline
+bool operator<(const Term& lhs, const Term& rhs){ 
+		const vector<Term> & t_ops1 = ((FunctionTerm *) lhs.get())->getOperands();
+		const vector<Term> & t_ops2 = ((FunctionTerm *) rhs.get())->getOperands();
+		
+		if(t_ops1.size() > t_ops2.size())
+			return true;
+		if(((FunctionTerm *) lhs.get())->getSymbol() > ((FunctionTerm *) rhs.get())->getSymbol())
+			return true;
+		for(unsigned i = 0; i < t_ops1.size(); i++){
+			if(t_ops1[i] < t_ops2[i])
+				return true;
+		}
+		return false;
+} 
+/* ovo nam je potrebno za skup termova i use mapu koje cemo da izvlacimo iz ulaza   */
+struct C
+{
+    bool operator()(const Term &a, const Term &b) const
+    {
+        return a<b;
+    }
+};
 
+typedef set<Term, C> TermSet;
+typedef map<Term, TermSet> UseMap;
 
 extern Formula parsed_formula;
 extern vector<Formula>* parsed_set_of_formulas;
