@@ -18,13 +18,20 @@ class UnionFind{
 private:
    vector<Node*> _nodes;
    int _numOfSets;
+   UseMap _map;
 public:
-   UnionFind(TermSet &t);
+   UnionFind(TermSet &t, UseMap &u);
    int findRootOfTerm(Term t) const;
    void unionOfSets(Term firstTerm, Term secondTerm);	
    void printUnionFind() const;
    TermSet findAllRoots() const;
    set<Node*> findAllRootNodes() const;
+   int findPosition(Term s) const;
+   TermSet findTermsFromTheSameSet(Term t) const;
+   bool cong(Term firstTerm, Term secondTerm) const;
+   UseMap& getUMap();
+   
+   ~UnionFind();
 };
 
 #endif

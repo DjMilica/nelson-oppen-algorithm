@@ -139,17 +139,16 @@ public:
 
   virtual void printFormula(ostream & ostr) const
   {
-    ostr << _p;
-    for(unsigned i = 0; i < _ops.size(); i++)
-      {
-	if(i == 0)
-	  ostr << "(";
-	_ops[i]->printTerm(ostr);
-	if(i != _ops.size() - 1)
-	  ostr << ",";
-	else
-	  ostr << ")";
-      }
+   ostr << _p;
+   for(unsigned i = 0; i < _ops.size(); i++){
+      if(i == 0)
+         ostr << "(";
+      _ops[i]->printTerm(ostr);
+      if(i != _ops.size() - 1)
+         ostr << ",";
+      else
+         ostr << ")";
+   }
   }
 
   virtual Type getType() const

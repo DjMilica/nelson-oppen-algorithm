@@ -55,23 +55,73 @@ void getUseMap(UseMap &um, TermSet &t){
       um.insert(make_pair(i,temp));
    }
 }
+//ovo sad je funkcija koja izracunava P_s = U { use(s') | find(s') == find(s) }
+TermSet getSetsForMerge(Term s, UnionFind &u){
+   UseMap& um = u.getUMap();
+   TermSet equivalencySet = u.findTermsFromTheSameSet(s);
+   TermSet returnValue;
+   for(auto t: um[s])
+      returnValue.insert(t);
+   for(auto t: equivalencySet){
+      //sve koji su use od t ubaci u konacni skup
+      cout<< "MA NESTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+      TermSet use = um[t];
+      for(auto term: use){
+         cout << "########### printujem term " << term << endl; 
+         returnValue.insert(term);
+      }
+   }
+   return returnValue;
+}
+void merge(Term s, Term t, UnionFind &u){
+   TermSet firstSet = getSetsForMerge(s,u);
+   TermSet secondSet = getSetsForMerge(t,u);
+   u.unionOfSets(s,t);
+   for(auto a: firstSet){
+      for(auto b: secondSet){
+         cout << "$$$$$$$$$$ Radim proveru za: " << a << " i " << b << endl;
+         if(u.findRootOfTerm(a)!=u.findRootOfTerm(b) && u.cong(a,b)){
+            cout<<"**********Merge iz merge za: " << a << " i " << b << "**************" << endl;
+            merge(a,b,u);
+            cout << "***************union find**: ";
+            u.printUnionFind();
+         }
+      }
+   }
+}
+void cc(vector<Formula>* E, TermSet T, UnionFind &u){
+   for(auto f: *E){
+      Equality *atom = (Equality*)f.get();
+      const Term &s = atom->getLeftOperand();
+      const Term &t = atom->getRightOperand();
+      int root1 = u.findRootOfTerm(s);
+      int root2 = u.findRootOfTerm(t);
+      if(root1!=root2){
+         cout<<"**********Merge iz cc za: " << s << " i " << t << "**************" << endl; 
+         merge(s,t,u);
+         cout << "***************union find**: ";
+         u.printUnionFind();
+      }
+   }
+}
+//{f(a,b)=a,f(b,a)=b} {f(f(a,b),f(b,a))=a}
 int main()
 {
    yyparse();
 
-   if(parsed_formula.get() != 0)
+   /*if(parsed_formula.get() != 0)
       cout << parsed_formula;
    cout<< "\na sad formule" << endl;
    for(auto i:*parsed_set_of_formulas){
       cout<<i<<endl;
    }
-   cout << "a sad skup termova"<<endl;
+   cout << "a sad skup termova"<<endl;*/
    TermSet allTerms;
    getTerms(parsed_set_of_formulas, parsed_formula, allTerms);
-   for(auto i:allTerms)
+   /*for(auto i:allTerms)
       cout << i <<" ";
-   cout<<endl;
-   cout << "a sad skup use" << endl;
+   cout<<endl;*/
+   cout << "          a sad skup use            " << endl;
    UseMap um;
    getUseMap(um,allTerms);
    for(auto i:um){
@@ -83,7 +133,9 @@ int main()
    cout<<endl; 
    /*************rad sa union find*******************/
    cout<< "         Union find        " << endl;
-   UnionFind u(allTerms);
+   UnionFind u(allTerms, um);
+   u.printUnionFind(); 
+   cc(parsed_set_of_formulas, allTerms, u);
    u.printUnionFind();
    return 0;
 }
