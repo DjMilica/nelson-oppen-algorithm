@@ -14,6 +14,11 @@ extern vector<Formula>* parsed_set_of_formulas;
 
 void getTermsFromTerm(FunctionTerm *ft, TermSet& allTerms){
    Term t = make_shared<FunctionTerm>(ft->getSymbol(),ft->getOperands());
+   /*bool exists = false;  //NOTE ovo je bilo dok nije radio operator <
+   for(auto term: allTerms)
+      if(term==t)
+         exists = true;
+   if(!exists) */
    allTerms.insert(t);
    if(ft->getOperands().size()==0){
       return ;
@@ -60,14 +65,19 @@ TermSet getSetsForMerge(Term s, UnionFind &u){
    UseMap& um = u.getUMap();
    TermSet equivalencySet = u.findTermsFromTheSameSet(s);
    TermSet returnValue;
-   for(auto t: um[s])
-      returnValue.insert(t);
+
+   TermSet use = um[s]; 
+   /*TermSet use; NOTE ovo je bilo dok nije radio operator <
+   for(auto pair: um)
+      if(pair.first==s)
+         use = pair.second;*/
+   for(auto term: use){
+      returnValue.insert(term);
+   }
    for(auto t: equivalencySet){
       //sve koji su use od t ubaci u konacni skup
-      cout<< "MA NESTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
       TermSet use = um[t];
       for(auto term: use){
-         cout << "########### printujem term " << term << endl; 
          returnValue.insert(term);
       }
    }
@@ -76,15 +86,22 @@ TermSet getSetsForMerge(Term s, UnionFind &u){
 void merge(Term s, Term t, UnionFind &u){
    TermSet firstSet = getSetsForMerge(s,u);
    TermSet secondSet = getSetsForMerge(t,u);
+   //cout << "**spajam " << s << " i " << t << endl;
    u.unionOfSets(s,t);
+   /*cout << "Prvi: ";
+   for(auto a: firstSet)
+      cout << a;
+   cout<< endl;
+   cout << "Drugi: ";
+   for(auto a: secondSet)
+      cout << a;
+   cout<< endl;*/
    for(auto a: firstSet){
       for(auto b: secondSet){
-         cout << "$$$$$$$$$$ Radim proveru za: " << a << " i " << b << endl;
+         //cout << "u merge elementi seta su: " << a << " i " << b << endl;
          if(u.findRootOfTerm(a)!=u.findRootOfTerm(b) && u.cong(a,b)){
-            cout<<"**********Merge iz merge za: " << a << " i " << b << "**************" << endl;
+            //cout << "********merge iz merge za " << a << " i " << b << endl;
             merge(a,b,u);
-            cout << "***************union find**: ";
-            u.printUnionFind();
          }
       }
    }
@@ -97,14 +114,17 @@ void cc(vector<Formula>* E, TermSet T, UnionFind &u){
       int root1 = u.findRootOfTerm(s);
       int root2 = u.findRootOfTerm(t);
       if(root1!=root2){
-         cout<<"**********Merge iz cc za: " << s << " i " << t << "**************" << endl; 
+         //cout << "********merge iz cc za " << s << " i " << t << endl;
          merge(s,t,u);
-         cout << "***************union find**: ";
-         u.printUnionFind();
       }
    }
 }
 //{f(a,b)=a,f(b,a)=b} {f(f(a,b),f(b,a))=a}
+//{y=f(x),x=g(y)} {x=g(f(x))};
+//{x=f(x)} {x=f(f(f(x)))};
+//{y=f(x),x=f(y)} {y=f(f(x))};
+//{f(x,y) = f(y,x),g(x,y) = f(f(x,y),f(y,x)),g(y,x) = f(f(y,x), f(x,y))} {g(x,y) = g(y,x)}
+//{f(g(a)) = g(f(a)),g(g(a)) = f(a), f(f(a)) = g(a)} { g(f(g(g(a)))) = f(a)}
 int main()
 {
    yyparse();
@@ -118,9 +138,9 @@ int main()
    cout << "a sad skup termova"<<endl;*/
    TermSet allTerms;
    getTerms(parsed_set_of_formulas, parsed_formula, allTerms);
-   /*for(auto i:allTerms)
+   for(auto i:allTerms)
       cout << i <<" ";
-   cout<<endl;*/
+   cout<<endl;
    cout << "          a sad skup use            " << endl;
    UseMap um;
    getUseMap(um,allTerms);
@@ -135,6 +155,7 @@ int main()
    cout<< "         Union find        " << endl;
    UnionFind u(allTerms, um);
    u.printUnionFind(); 
+   cout << endl;
    cc(parsed_set_of_formulas, allTerms, u);
    u.printUnionFind();
    return 0;

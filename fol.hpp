@@ -205,18 +205,42 @@ bool operator==(const Term& lhs, const Term& rhs){
 }
 inline
 bool operator<(const Term& lhs, const Term& rhs){ 
-		const vector<Term> & t_ops1 = ((FunctionTerm *) lhs.get())->getOperands();
-		const vector<Term> & t_ops2 = ((FunctionTerm *) rhs.get())->getOperands();
-		
-		if(t_ops1.size() > t_ops2.size())
-			return true;
-		if(((FunctionTerm *) lhs.get())->getSymbol() > ((FunctionTerm *) rhs.get())->getSymbol())
-			return true;
-		for(unsigned i = 0; i < t_ops1.size(); i++){
-			if(t_ops1[i] < t_ops2[i])
-				return true;
-		}
-		return false;
+   const vector<Term> & t_ops1 = ((FunctionTerm *) lhs.get())->getOperands();
+   const vector<Term> & t_ops2 = ((FunctionTerm *) rhs.get())->getOperands();
+   bool equal = true;
+    if(((FunctionTerm *) lhs.get())->getSymbol() == ((FunctionTerm *) rhs.get())->getSymbol()){
+       if(t_ops1.size() == t_ops2.size()){
+          for(unsigned i = 0; i < t_ops2.size(); i++){
+             if(!(t_ops1[i]==t_ops2[i]))
+                equal = false;
+          }
+          if(equal)
+            return false;
+       }
+    }
+    //cout << "Prvi: " << lhs << ", a drugi " << rhs << endl;
+    if(((FunctionTerm *) lhs.get())->getSymbol() < ((FunctionTerm *) rhs.get())->getSymbol()){
+      //cout<< "prvi true" << endl;
+      return true;
+    }
+    if(((FunctionTerm *) lhs.get())->getSymbol() == ((FunctionTerm *) rhs.get())->getSymbol()){
+      if(t_ops1.size() < t_ops2.size()){
+      // cout<< "drugi true" << endl;
+         return true;
+      }
+      if(t_ops1.size() == t_ops2.size()){
+         for(unsigned i=0;i<t_ops1.size();i++){
+            if(t_ops1[i] == t_ops2[i])
+               continue;
+            if(t_ops1[i] < t_ops2[i])
+               return true;
+            else 
+               return false;
+         }
+      }
+    }
+    
+    return false;
 } 
 /* ovo nam je potrebno za skup termova i use mapu koje cemo da izvlacimo iz ulaza   */
 struct C
@@ -228,7 +252,7 @@ struct C
 };
 
 typedef set<Term, C> TermSet;
-typedef map<Term, TermSet> UseMap;
+typedef map<Term, TermSet, C> UseMap;
 
 extern Formula parsed_formula;
 extern vector<Formula>* parsed_set_of_formulas;

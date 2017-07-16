@@ -99,10 +99,9 @@ void UnionFind::printUnionFind() const{
 
 
 bool UnionFind::cong(Term firstTerm, Term secondTerm) const{
-   cout<< "!!!!!!!!!!!!!!!!Radim cong za: " << firstTerm << " i " << secondTerm << endl;
    FunctionTerm* f = (FunctionTerm*)firstTerm.get();
    const vector<Term> &terms1 = f->getOperands();
-   FunctionTerm* g = (FunctionTerm*)firstTerm.get();
+   FunctionTerm* g = (FunctionTerm*)secondTerm.get();
    const vector<Term> &terms2 = g->getOperands();
    if(f->getSymbol()!=g->getSymbol())
       return false;
