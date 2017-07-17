@@ -28,7 +28,6 @@ public:
    set<Node*> findAllRootNodes() const;
    int findPosition(Term s) const;
    TermSet findTermsFromTheSameSet(Term t) const;
-   bool cong(Term firstTerm, Term secondTerm) const;
    UseMap& getUMap();
    
    ~UnionFind();

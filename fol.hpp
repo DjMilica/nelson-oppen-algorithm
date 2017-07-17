@@ -207,32 +207,20 @@ inline
 bool operator<(const Term& lhs, const Term& rhs){ 
    const vector<Term> & t_ops1 = ((FunctionTerm *) lhs.get())->getOperands();
    const vector<Term> & t_ops2 = ((FunctionTerm *) rhs.get())->getOperands();
-   bool equal = true;
-    if(((FunctionTerm *) lhs.get())->getSymbol() == ((FunctionTerm *) rhs.get())->getSymbol()){
-       if(t_ops1.size() == t_ops2.size()){
-          for(unsigned i = 0; i < t_ops2.size(); i++){
-             if(!(t_ops1[i]==t_ops2[i]))
-                equal = false;
-          }
-          if(equal)
-            return false;
-       }
-    }
-    //cout << "Prvi: " << lhs << ", a drugi " << rhs << endl;
+
+  
     if(((FunctionTerm *) lhs.get())->getSymbol() < ((FunctionTerm *) rhs.get())->getSymbol()){
-      //cout<< "prvi true" << endl;
       return true;
     }
     if(((FunctionTerm *) lhs.get())->getSymbol() == ((FunctionTerm *) rhs.get())->getSymbol()){
       if(t_ops1.size() < t_ops2.size()){
-      // cout<< "drugi true" << endl;
          return true;
       }
       if(t_ops1.size() == t_ops2.size()){
          for(unsigned i=0;i<t_ops1.size();i++){
             if(t_ops1[i] == t_ops2[i])
                continue;
-            if(t_ops1[i] < t_ops2[i])
+            else if(t_ops1[i] < t_ops2[i])
                return true;
             else 
                return false;

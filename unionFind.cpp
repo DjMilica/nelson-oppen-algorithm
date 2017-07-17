@@ -7,7 +7,7 @@ UnionFind::UnionFind(TermSet &t, UseMap &u) : _map(u)
    for(auto term: t)
    {
       Node *n = new Node();
-      n->t = term; //TODO ispitaj da li je ovo kriticno ili mora make_shared!
+      n->t = term; 
       n->parent = n;
       n->rank = 0;
       n->position = i;
@@ -33,7 +33,6 @@ int UnionFind::findRootOfTerm(Term t) const{
       current = current->parent;
    return current->position;
    
-   //TODO mozes da vidis ovde da napravis da svaki pokazuje bas na root-a, a ne na nekog svog parenta
    //ako nismo pronasli taj term, vracamo -1
    return -1;
 }
@@ -58,14 +57,16 @@ void UnionFind::unionOfSets(Term firstTerm, Term secondTerm){
 TermSet UnionFind::findAllRoots() const{
    TermSet roots;
    for(unsigned i = 0; i < _nodes.size(); i++){
-      roots.insert(_nodes[i]->parent->t);
+      int j = findRootOfTerm(_nodes[i]->t);
+      roots.insert(_nodes[j]->t); 
    }
    return roots;
 }
 set<Node*> UnionFind::findAllRootNodes() const{
    set<Node*> nodes;
    for(unsigned i = 0; i < _nodes.size(); i++){
-      nodes.insert(_nodes[i]->parent);
+      int j = findRootOfTerm(_nodes[i]->t);
+      nodes.insert(_nodes[j]);
    }
    return nodes;
 }
@@ -89,7 +90,7 @@ void UnionFind::printUnionFind() const{
       cout << "Klasa ekvivalencije broj " << i << ":" << root->t;
       TermSet equivalencySet = findTermsFromTheSameSet(root->t);
       for(auto term: equivalencySet){
-         cout << ", " << term;
+         cout << " , " << term;
       }
       cout << endl;
       i++;
@@ -98,22 +99,11 @@ void UnionFind::printUnionFind() const{
 }
 
 
-bool UnionFind::cong(Term firstTerm, Term secondTerm) const{
-   FunctionTerm* f = (FunctionTerm*)firstTerm.get();
-   const vector<Term> &terms1 = f->getOperands();
-   FunctionTerm* g = (FunctionTerm*)secondTerm.get();
-   const vector<Term> &terms2 = g->getOperands();
-   if(f->getSymbol()!=g->getSymbol())
-      return false;
-   for(unsigned i=0; i<terms1.size(); i++){
-      if(findRootOfTerm(terms1[i]) != findRootOfTerm(terms2[i]))
-         return false;
-   }
-   return true;
-}
 UseMap& UnionFind::getUMap(){
    return _map;
 }
 UnionFind::~UnionFind(){
-   
+   for(unsigned i=0;i<_nodes.size();i++){
+      delete _nodes[i];
+   }
 }
