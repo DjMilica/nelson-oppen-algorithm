@@ -14,11 +14,6 @@ extern vector<Formula>* parsed_set_of_formulas;
 
 void getTermsFromTerm(FunctionTerm *ft, TermSet& allTerms){ 
    Term t = make_shared<FunctionTerm>(ft->getSymbol(),ft->getOperands());
-   /*bool exists = false;  //NOTE ovo je bilo dok nije radio operator <
-   for(auto term: allTerms)
-      if(term==t)
-         exists = true;
-   if(!exists) */
    allTerms.insert(t);
    if(ft->getOperands().size()==0){
       return ;
@@ -70,12 +65,16 @@ void printUseMap(UseMap &um){
    cout<<endl;
 }
 bool cong(Term firstTerm, Term secondTerm, UnionFind &u){
+   
    FunctionTerm* f = (FunctionTerm*)firstTerm.get();
-   const vector<Term> &terms1 = f->getOperands();
    FunctionTerm* g = (FunctionTerm*)secondTerm.get();
-   const vector<Term> &terms2 = g->getOperands();
+   
    if(f->getSymbol()!=g->getSymbol())
       return false;
+   
+   const vector<Term> &terms1 = f->getOperands();
+   const vector<Term> &terms2 = g->getOperands();
+
    for(unsigned i=0; i<terms1.size(); i++){
       if(u.findRootOfTerm(terms1[i]) != u.findRootOfTerm(terms2[i]))
          return false;
@@ -90,10 +89,6 @@ TermSet getSetsForMerge(Term s, UnionFind &u){
    TermSet returnValue;
 
    TermSet use = um[s]; 
-   /*TermSet use; NOTE ovo je bilo dok nije radio operator <
-   for(auto pair: um)
-      if(pair.first==s)
-         use = pair.second;*/
    for(auto term: use){
       returnValue.insert(term);
    }
@@ -138,14 +133,19 @@ bool checkEquality(vector<Formula>* E, Formula f){
    getUseMap(um,allTerms);
    UnionFind u(allTerms, um);
    cc(E, allTerms, u);
-   
+   cout << "*********************Ovo je skup termova*****************"<<endl;
+   for(auto i:allTerms)
+      cout << i <<" ";
+   cout<<endl;
+   cout << "*********************Ovo je use mapa*********************"<<endl;
+   printUseMap(um);
    //sad proveravanje da li termovi iz f pripadaju istoj klasi ekvivalencije
    Equality *atom = (Equality*)f.get();
    const Term& ft1 = atom->getLeftOperand();
    const Term& ft2 = atom->getRightOperand();
-   cout<< "**************Ovo su klase ekvivalencije*******************" << endl;
+   cout<< "**************Ovo su klase ekvivalencije******************" << endl;
    u.printUnionFind(); 
-   cout << "**********************************************************" << endl;
+   cout << "*********************************************************" << endl;
    TermSet roots = u.findAllRoots();
    for(auto term: roots){
       TermSet classEqualency = u.findTermsFromTheSameSet(term);
@@ -157,14 +157,7 @@ bool checkEquality(vector<Formula>* E, Formula f){
    }
    return false;
 }
-//ako posmatramo formulu iz druge {} kao nejednakost, proveravamo zadovoljivost
-void checkSAT(vector<Formula>* E, Formula f){
-   if(checkEquality(E,f))
-      cout << "Formula nije zadovoljiva jer se termovi iz formule " << f << " nalaze u istoj klasi kongruencije!" << endl;
-   else
-      cout << "Formula je zadovoljiva jer se termovi iz formule " << f << " nalaze u razlicitim klasama kongruencije!" << endl;
-   
-}
+
 //{f(a,b)=a,f(b,a)=b} {f(f(a,b),f(b,a))=a}
 //{y=f(x),x=g(y)} {x=g(f(x))};
 //{x=f(x)} {x=f(f(f(x)))};
@@ -175,36 +168,10 @@ int main()
 {
    yyparse();
 
-   /*if(parsed_formula.get() != 0)
-      cout << parsed_formula;
-   cout << "a sad skup termova"<<endl;
-   TermSet allTerms;
-   getTerms(parsed_set_of_formulas, parsed_formula, allTerms);
-   for(auto i:allTerms)
-      cout << i <<" ";
-   cout<<endl;
-   cout << "          a sad skup use            " << endl;
-   UseMap um;
-   getUseMap(um,allTerms);
-   for(auto i:um){
-      cout << i.first <<" : ";
-      for(auto v:i.second)
-      cout << v << ", ";
-      cout<<endl;
-   }
-   cout<<endl; */
-   /*************rad sa union find*******************/
-   /*cout<< "         Union find        " << endl;
-   UnionFind u(allTerms, um);
-   u.printUnionFind(); 
-   cout << endl;
-   cc(parsed_set_of_formulas, allTerms, u);
-   u.printUnionFind();*/
    if(checkEquality(parsed_set_of_formulas,parsed_formula))
-      cout << "Vazi" << endl;
+      cout << "Termovi iz formule " << parsed_formula << " se nalaze u istim klasama ekvivalencije!"  << endl;
    else
-      cout << "Ne vazi" << endl;
+      cout << "Termovi iz formule " << parsed_formula << " se  ne nalaze u istim klasama ekvivalencije!" << endl;
    
-   //checkSAT(parsed_set_of_formulas, parsed_formula);
    return 0;
 }

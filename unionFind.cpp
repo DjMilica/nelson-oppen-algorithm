@@ -14,7 +14,6 @@ UnionFind::UnionFind(TermSet &t, UseMap &u) : _map(u)
       _nodes.push_back(n);
       i++;
    }
-   _numOfSets = t.size();
 }
 int UnionFind::findPosition(Term s) const{
    for(unsigned i = 0; i < _nodes.size(); i++)
@@ -27,14 +26,12 @@ int UnionFind::findPosition(Term s) const{
 int UnionFind::findRootOfTerm(Term t) const{
    Node *current;
    unsigned i = findPosition(t);
-   
+   if(i==-1)
+      return -1;
    current = _nodes[i];
    while(current->parent != current)
       current = current->parent;
    return current->position;
-   
-   //ako nismo pronasli taj term, vracamo -1
-   return -1;
 }
 
 void UnionFind::unionOfSets(Term firstTerm, Term secondTerm){
@@ -52,7 +49,6 @@ void UnionFind::unionOfSets(Term firstTerm, Term secondTerm){
       secondSet->parent = firstSet;
       firstSet->rank++; 
    }
-   _numOfSets--;
 }
 TermSet UnionFind::findAllRoots() const{
    TermSet roots;
@@ -87,7 +83,7 @@ void UnionFind::printUnionFind() const{
    set<Node*> roots = findAllRootNodes();
    int i=0;
    for (auto root: roots){
-      cout << "Klasa ekvivalencije broj " << i << ":" << root->t;
+      cout << "Klasa kongruncije broj " << i << ": " << root->t;
       TermSet equivalencySet = findTermsFromTheSameSet(root->t);
       for(auto term: equivalencySet){
          cout << " , " << term;
